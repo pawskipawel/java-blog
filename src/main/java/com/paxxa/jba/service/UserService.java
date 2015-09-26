@@ -5,6 +5,8 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import com.paxxa.jba.entity.Blog;
@@ -15,6 +17,7 @@ import com.paxxa.jba.repository.ItemRepository;
 import com.paxxa.jba.repository.UserRepository;
 
 @Service
+@Transactional
 public class UserService {
 
 	@Autowired
@@ -28,7 +31,6 @@ public class UserService {
 
 	public List<User> findAll() {
 		return userRepository.findAll();
-
 	}
 
 	public User findOne(int id) {
@@ -40,12 +42,15 @@ public class UserService {
 		User user = findOne(id);
 		List<Blog> blogs = blogRepostory.findByUser(user);
 		for (Blog blog : blogs) {
-			List<Item> items = itemRepository.findByBlog(blog);
+			List<Item> items = itemRepository.findByBlog(blog, new PageRequest(0, 10, Direction.DESC, "publishedDate"));
 			blog.setItems(items);
-
 		}
 		user.setBlogs(blogs);
 		return user;
+	}
+
+	public void save(User user) {
+		userRepository.save(user);
 	}
 
 }
